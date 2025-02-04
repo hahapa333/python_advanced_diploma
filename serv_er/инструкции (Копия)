@@ -1,0 +1,24 @@
+``sudo service postgresql stop`` --остановить службу PostgreSQL
+sudo ss -lptn 'sport = :5432' -- чтобы увидеть, какой процесс привязан к порту
+lsof -i :5432 -- можно ещё так проверить
+kill 5432 -- убить процесс
+docker ps -a -- выводим все контейнеры
+docker-compose up --build (флаг build нужен для пересборки контейнера, т.к. добавили новые пакеты для скачивания)
+docker-compose down --удаляем контейнер
+docker stop $(docker ps -a -q)--Чтобы в docker удалить все контейнеры, достаточно этих двух команд:
+docker container  rm $(docker ps -a -q)
+docker rmi $(docker images -a -q) -- Удаляем образы:
+docker volume rm $(docker volume ls -a -q)-- удаляем репозитории
+docker network rm $(docker network ls -a -q) -- Удаляем сети:
+docker build . -f Dockerfile -t <имя докера> -- создаём контейнер
+docker run -ti -p 80:80 <имя докера> -- запускаем контейнер на 80 порту
+
+#################             NGINX           ######################################
+
+sudo docker run -ti <имя докера> bash -- открываем контейнер в нём хранится директория nginx
+sudo nano /etc/nginx/nginx.conf -- просмотр конфигурационного файла сервера nginx
+
+####################################################################################
+
+sudo rm -r папка/ --удалить папку с замочком
+docker cp nginx:/etc/nginx/nginx.conf ./ -- копируем с докера в общую папку с проектом

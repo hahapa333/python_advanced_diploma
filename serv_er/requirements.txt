@@ -1,0 +1,6 @@
+Flask
+uWSGI
+psycopg2-binary
+Flask-SQLAlchemy
+requests
+pytest

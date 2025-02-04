@@ -1,0 +1,51 @@
+sudo -i -u postgres - запуск
+psql - заходим в psql
+
+<создаём пользователя и саму бд>
+    postgres=# CREATE DATABASE <имя бд>;
+    postgres=# CREATE USER <имя юзера> WITH PASSWORD 'пароль';
+    postgres=# GRANT ALL PRIVILEGES ON DATABASE <имя бд> to <имя юзера> ;
+    postgres=# \q
+
+<Готово, вы создали пользователя.>
+
+----------------------------------------
+
+в случае ошибки с миграцией пишем
+
+
+После создания миграции вручную или в --autogenerate формате alembic upgrade head.
+Если вы использовали db.create_all()из оболочки, вы можете использовать,
+alembic stamp head чтобы указать, что текущее состояние базы данных представляет
+собой применение всех миграций.
+
+
+------------------ работа в докере
+команды для запуска контейнера для postgresql
+docker-compose build - собрать контейнер
+docker compose up - запуск контейнера
+docker-compose down - удалить контейнер
+docker container ls - список контейнеров
+docker exec -it hw2-db-1 /bin/sh - заходим в контейнер
+psql -U admin - заходим под админом
+\l - список баз данных
+create database test_db; - создаём базу данных
+\c test_db; - подключиться к базе данных
+\dt - список таблиц в базе данных
+\d название таблицы - просмотр содержимого таблицы
+select * from название таблицы - просмотр всех записей таблицы
+DROP TABLE if exists users cascade; - удаление таблицы
+
+----------------------------------- миграции alembic--------------------
+
+alembic init alembic - инициализация
+alembic revision --message="Init migration" --autogenerate
+alembic upgrade head - накатываем миграцию
+alembic downgrade head - откатить миграцию
+alembic merge heads  -m "merge previous and next migration" -- соединяем ветки
+
+------------------------------env------------------------
+sudo apt install python3-venv - переходим в нужный каталог вводим команду
+python3 -m venv test_env - создаём виртуальную среду
+source test_env/bin/activate - активируем виртуальную среду
+deactivate - деактивируем среду
