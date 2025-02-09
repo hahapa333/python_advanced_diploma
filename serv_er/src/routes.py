@@ -5,7 +5,6 @@ from werkzeug.utils import secure_filename
 
 from models import User, db, Twitt, Media, Followers, Likes
 
-
 app = Flask(__name__, static_url_path='/dist', static_folder='/usr/share/nginx/html')
 app.config["SQLALCHEMY_DATABASE_URI"] = 'postgresql+psycopg2://postgres:postgres@db:5432/twitter_db'
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -28,7 +27,6 @@ def before_request_func():
 def shutdown_session(exception=None):
     db.session.remove()
 
-
     """получить клиента"""
 
 
@@ -46,7 +44,9 @@ def get_client():
                 "following": following_list
             }}
 
+
 """добавляем пользователя"""
+
 
 @app.route("/user_add", methods=["POST"])
 def add_user():
@@ -59,14 +59,16 @@ def add_user():
     db.session.commit()
     return new_u.to_json()
 
+
 """загружаем файлы"""
+
 
 @app.route("/api/medias", methods=['POST'])
 def upload_file():
     file = request.files['file']
-        # безопасно извлекаем оригинальное имя файла
+    # безопасно извлекаем оригинальное имя файла
     filename = secure_filename(file.filename)
-        # сохраняем файл
+    # сохраняем файл
     file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
     id = request.form.get('id', type=int)
     path = request.form.get('path', type=str, default=filename)
@@ -75,47 +77,84 @@ def upload_file():
     db.session.add(media)
     db.session.commit()
     return {
-            "result": "true",
-            "media_id": media.id
-            }
+        "result": "true",
+        "media_id": media.id
+    }
+
 
 """создать твит """
 
+
 @app.route("/api/tweets/", methods=['POST'])
 def create_api_handler():
-    global i_media_id
-    http_key = request.headers.get('api-key')
-    users = db.session.query(User).filter(http_key == User.api_key).all()
-    media = db.session.query(Media).all()
-    """Создание нового твита"""
-    id = request.form.get('id', type=int)
-    tweet_data = request.form.get('tweet_data', type=str, default=request.json["tweet_data"])
-    for u in users:
-        i_media_id += 1
-        new_twitt = Twitt(
-                         tweet_data=tweet_data,
-                         tweet_media_ids=media[i_media_id],
-                         id=id,
-                         author=user.query.get(u.id),
-                         )
-        db.session.add(new_twitt)
-        db.session.commit()
-        like_list.append([])
-        return {
-                  "result": "true",
-                  "tweet_id": new_twitt.id,
+    try:
+        global i_media_id
+        http_key = request.headers.get('api-key')
+        users = db.session.query(User).filter(http_key == User.api_key).all()
+        media = db.session.query(Media).all()
+        tweet = db.session.query(Twitt).all()
+        if len(media) <= len(tweet):
+            medias = Media(path="")
+            db.session.add(medias)
+            db.session.commit()
+
+            """Создание нового твита"""
+            id = request.form.get('id', type=int)
+            tweet_data = request.form.get('tweet_data', type=str, default=request.json["tweet_data"])
+            for u in users:
+                i_media_id += 1
+                new_twitt = Twitt(
+                    tweet_data=tweet_data,
+                    tweet_media_ids=medias,
+                    id=id,
+                    author=user.query.get(u.id),
+                )
+                db.session.add(new_twitt)
+                db.session.commit()
+                like_list.append([])
+                return {
+                    "result": "true",
+                    "tweet_id": new_twitt.id,
                 }
+        else:
+            """Создание нового твита"""
+            id = request.form.get('id', type=int)
+            tweet_data = request.form.get('tweet_data', type=str, default=request.json["tweet_data"])
+            for u in users:
+                i_media_id += 1
+                new_twitt = Twitt(
+                    tweet_data=tweet_data,
+                    tweet_media_ids=media[i_media_id],
+                    id=id,
+                    author=user.query.get(u.id),
+                )
+                db.session.add(new_twitt)
+                db.session.commit()
+                like_list.append([])
+                return {
+                    "result": "true",
+                    "tweet_id": new_twitt.id,
+                }
+    except IndexError as e:
+        assert e
+        return {"result": "false", "error_type": f"{e}", "error_message": "error index"}
+
 
 """удалить твит"""
 
+
 @app.route("/api/tweets/<int:id>", methods=["DELETE"])
 def del_twit(id: int):
+    global i_media_id
+    i_media_id -= 1
     twitt_delete = db.session.query(Twitt).filter(Twitt.id == id).one()
     db.session.delete(twitt_delete)
     db.session.commit()
     return jsonify("result true")
 
+
 """получить твиты всех пользователей"""
+
 
 @app.route("/api/tweets/", methods=["GET"])
 def get_twit():
@@ -127,26 +166,30 @@ def get_twit():
     for tw in twit:
         i += 1
         tw_list.append({
-                "id": tw.id,
-                "content": tw.tweet_data,
-                "attachments": [media[i].path],
-                "author": {
-                    "id": tw.user_id,
-                    "name": [u.name for u in users if tw.user_id == u.id][0],
-                },
-                "likes": like_list[i]
-            })
+            "id": tw.id,
+            "content": tw.tweet_data,
+            "attachments": [media[i].path],
+            "author": {
+                "id": tw.user_id,
+                "name": [u.name for u in users if tw.user_id == u.id][0],
+            },
+            "likes": like_list[i]
+        })
+            # tw_list[i]
     return {
         "result": "true",
         "tweets": tw_list
-        }
+    }
+
 
 """подписаться на пользователя """
 
 followed_list = []
 following_list = []
+
+
 @app.route("/api/users/<int:id>/follow", methods=["POST"])
-def users_follow(id:int):
+def users_follow(id: int):
     http_key = request.headers.get('api-key')
     user_following = db.session.query(User).filter(id == User.id).all()
     users = db.session.query(User).filter(id != User.id).filter(http_key == User.api_key).all()
@@ -163,10 +206,12 @@ def users_follow(id:int):
         "result": "true"
     }
 
+
 """отписаться"""
 
+
 @app.route("/api/users/<int:id>/follow", methods=["DELETE"])
-def del_follow(id:int):
+def del_follow(id: int):
     follow_del = db.session.query(Followers).filter(Followers.id_followings == id).first()
     db.session.delete(follow_del)
     db.session.commit()
@@ -174,10 +219,12 @@ def del_follow(id:int):
         "result": "true"
     }
 
+
 """получить клиента по его id"""
 
+
 @app.route("/api/users/<int:id>", methods=["GET"])
-def users_id(id:int):
+def users_id(id: int):
     i = -1
     followed_list.clear()
     following_list.clear()
@@ -197,13 +244,16 @@ def users_id(id:int):
                 "name": u.name,
                 "followers": followed_list,
                 "following": following_list
-                }}
+            }}
+
 
 """ставим лайк"""
 
 like_list = []
+
+
 @app.route("/api/tweets/<int:id>/likes", methods=["POST"])
-def add_likes(id:int):
+def add_likes(id: int):
     http_key = request.headers.get('api-key')
     users = db.session.query(User).filter(User.api_key == http_key).all()
     for tw in users:
@@ -216,19 +266,21 @@ def add_likes(id:int):
         db.session.add(likes)
         db.session.commit()
         like_list[id - 1].append({"user_id": likes.user_id, "name": likes.name_user_like,
-                                         "tweet_id": likes.tweet_id})
+                                  "tweet_id": likes.tweet_id})
     return {
         "result": "true",
         "like": like_list
     }
 
+
 """Удаляем лайк"""
 
+
 @app.route("/api/tweets/<int:id>/likes", methods=["DELETE"])
-def del_likes(id:int):
+def del_likes(id: int):
     like_del = db.session.query(Likes).filter(Likes.tweet_id == id).first()
     like_list[id - 1].remove({"user_id": like_del.user_id, "name": like_del.name_user_like,
-                                         "tweet_id": like_del.tweet_id})
+                              "tweet_id": like_del.tweet_id})
     db.session.delete(like_del)
     db.session.commit()
     return {
