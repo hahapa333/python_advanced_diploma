@@ -1,9 +1,8 @@
-from typing import List, Dict, Any
+from typing import Any, Dict
+
 from flask_sqlalchemy import SQLAlchemy
 
-
 db = SQLAlchemy()
-
 
 
 class Followers(db.Model):
@@ -18,26 +17,23 @@ class Followers(db.Model):
         return f"подписчики {self.id_following}"
 
     def to_json(self) -> Dict[str, Any]:
-        return {c.name: getattr(self, c.name) for c in
-                self.__table__.columns}
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 
 class Twitt(db.Model):
-    __tablename__ = 'twitts'
+    __tablename__ = "twitts"
 
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     tweet_data = db.Column(db.String(50), nullable=False)
-    tweet_media_id = db.Column(db.Integer, db.ForeignKey('media.id'))
-
+    tweet_media_id = db.Column(db.Integer, db.ForeignKey("media.id"))
 
     def __repr__(self):
         return f"новый твит {self.tweet_data}"
 
-
-
     def to_json(self) -> Dict[str, Any]:
-        return {c.name: getattr(self, c.name) for c in
-                self.__table__.columns}
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 
 class User(db.Model):
     __tablename__ = "users"
@@ -46,14 +42,11 @@ class User(db.Model):
     name = db.Column(db.String(200), nullable=False)
     twit_table = db.relationship("Twitt", backref="author", lazy="dynamic")
 
-
     def __repr__(self):
         return f"{self.name} {self.id} {self.api_key}"
 
     def to_json(self) -> Dict[str, Any]:
-        return {c.name: getattr(self, c.name) for c in
-                self.__table__.columns}
-
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
 class Media(db.Model):
@@ -62,9 +55,9 @@ class Media(db.Model):
     path = db.Column(db.String(200), nullable=False)
     tweet_id = db.relationship("Twitt", backref="tweet_media_ids", lazy="dynamic")
 
-
     def __repr__(self):
         return f"{self.path} {self.id}"
+
 
 class Likes(db.Model):
     __tablename__ = "likes"
@@ -74,7 +67,5 @@ class Likes(db.Model):
     tweet_id = db.Column(db.Integer)
     name_user_like = db.Column(db.String(50))
 
-
     def __repr__(self):
         return f"{self.count_like}"
-

@@ -15,7 +15,7 @@ def app_():
         user = User\
         (
             api_key="test",
-            name="Kirill_test"
+            name="Test"
         )
 
         _db.session.add(user)
