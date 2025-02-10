@@ -320,7 +320,7 @@ def add_likes(id: int):
                     "tweet_id": likes.tweet_id,
                 }
             )
-            like_list.sort(key=lambda x: x[0], reverse=True)
+
         return {"result": "true", "like": like_list}
     except (IndexError, TypeError) as e:
         assert e
