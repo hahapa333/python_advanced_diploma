@@ -9,7 +9,6 @@ RUN pip install -r /app/requirements.txt
 COPY ./src /app/
 COPY ./dist /usr/share/nginx/html/dist
 COPY . /app
-# COPY ./index.html /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY uwsgi.ini /etc/uwsgi/uwsgi.ini
 COPY supervisord.ini /etc/supervisor/conf.d/supervisord.ini

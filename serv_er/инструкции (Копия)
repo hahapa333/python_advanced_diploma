@@ -31,3 +31,8 @@ sudo nano /etc/nginx/nginx.conf -- просмотр конфигурационн
 sudo rm -r папка/ --удалить папку с замочком
 docker cp nginx:/etc/nginx/nginx.conf ./ -- копируем с докера в общую папку с проектом
 pip freeze > requirements.txt -- записываем все пакеты установки в один файл
+
+#####################Git#####################
+git commit -m "remove env_serv from repository"-- удаляем папку
+git rm --cached -r env_serv/-- удаляем кэш
+git push origin main-- пушим в основную ветку
