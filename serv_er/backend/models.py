@@ -22,17 +22,25 @@ class Followers(db.Model):
 
 class Twitt(db.Model):
     __tablename__ = "twitts"
-
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     tweet_data = db.Column(db.String(50), nullable=False)
-    tweet_media_id = db.Column(db.Integer, db.ForeignKey("media.id"))
+
+    media = db.relationship("Media", backref="twitt")
 
     def __repr__(self):
         return f"новый твит {self.tweet_data}"
 
-    def to_json(self) -> Dict[str, Any]:
-        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
+class Media(db.Model):
+    __tablename__ = "media"
+    id = db.Column(db.Integer, primary_key=True)
+    tweet_id = db.Column(db.Integer, db.ForeignKey("twitts.id"))
+    media_type = db.Column(db.String(10))
+    media_url = db.Column(db.String(200))
+
+    def __repr__(self):
+        return f"{self.media_url} {self.id}"
 
 
 class User(db.Model):
@@ -49,23 +57,15 @@ class User(db.Model):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 
-class Media(db.Model):
-    __tablename__ = "media"
-    id = db.Column(db.Integer, primary_key=True)
-    path = db.Column(db.String(200), nullable=False)
-    tweet_id = db.relationship("Twitt", backref="tweet_media_ids", lazy="dynamic")
-
-    def __repr__(self):
-        return f"{self.path} {self.id}"
-
-
 class Likes(db.Model):
     __tablename__ = "likes"
     id = db.Column(db.Integer, primary_key=True)
-    api_key = db.Column(db.String(200), nullable=False)
-    user_id = db.Column(db.Integer)
-    tweet_id = db.Column(db.Integer)
-    name_user_like = db.Column(db.String(50))
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False)
+    tweet_id = db.Column(db.Integer, db.ForeignKey("twitts.id"), nullable=False)
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "tweet_id", name="_user_tweet_uc"),
+    )
 
     def __repr__(self):
-        return f"{self.count_like}"
+        return f"User {self.user_id} liked Tweet {self.tweet_id}"

@@ -1,62 +1,52 @@
-version: '3'
+version: '3.9'
+
 services:
-  flask:
-    # Путь до Dockerfile
-    build: .
-    # Имя для создаваемого контейнера
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
     container_name: backend-flask
-    # Создание переменных окружения в контейнере
-    environment:
-      # для отладки (при запуске в релиз убрать!)
-      - FLASK_ENV=development
-      ## Позволяет отслеживать процесс работы приложения в командной строке
-      - PYTHONUNBUFFERED=True
-      ##
-    # Перезапускаем сервис в случае падения
     restart: always
-    # Прокладывам путь для файлов. Все файлы, которые хранятся у вас в
-    # директории ./backend, появятся в директории контейнера /backend
-    volumes:
-      - ./dist:/usr/share/nginx/html/dist
-    # Открываем порт в контейнер
-    # Порт, который будет смотреть наружу : порт который используется внутри контейнера
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/twitter_db
     ports:
-      - 5000:5000
-    # gunicorn запускает в файле main.py, функцию create_app по адресу 0.0.0.0:5000
-#    command: gunicorn main:"create_app()" -b 0.0.0.0:5000 --reload
-    networks:
-      - backend
-    depends_on:
-      - nginx
-  nginx:
-    image: nginx:latest
-    container_name: nginx
-    build: .
-    ports:
-      - 8081:8080
+      - "8000:8000"
     volumes:
-#      - ./volumes/etc/nginx/nginx.conf:/etc/nginx/nginx.conf:ro #Конфигурация nginx.
-      - ./dist:/etc/nginx/conf.d
-      - ./dist:/usr/share/nginx/html/dist
-    networks:
-      - backend
+      - ./dist:/app/dist
     depends_on:
       - db
+    networks:
+      - backend
+    command: ["python", "backend/main.py"]
 
-#
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./dist:/app/dist
+
+    depends_on:
+      - backend
+    networks:
+      - backend
+
   db:
-    image: postgres:latest
+    image: postgres:17
     container_name: backend_postgresql
+    restart: always
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: twitter_db
-      log_destination: stderr
-#      logging_collector: on
-    ports:
-      - 5432:5432
     volumes:
       - ./data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     networks:
       - backend
 

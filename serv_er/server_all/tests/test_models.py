@@ -2,7 +2,7 @@ import json
 
 
 def test_create_user(client) -> None:
-    user_data = {"api_key": "test", "name": "Kirill_test", }
+    user_data = {"api_key": "test", "name": "Test", }
     resp = client.post("/user_add", data=user_data)
 
     assert resp.status_code == 200
@@ -36,7 +36,7 @@ def test_del_twit(client) -> None:
 def test_user(client) -> None:
     resp = client.get("/users/1")
     assert resp.status_code == 200
-    assert resp.json == {"result": "true", "user": {"id": 1, "name": "Kirill_test"}}
+    assert resp.json == {"result": "true", "user": {"id": 1, "name": "Test"}}
 
 
 def test_user_get_all(client) -> None:

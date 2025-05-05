@@ -1,7 +1,7 @@
 import os
 
 from flask import Flask, jsonify, request
-from serv_er.src.models import Followers, Likes, Media, Twitt, User, db
+from serv_er.backend.models import Followers, Likes, Media, Twitt, User, db
 from werkzeug.utils import secure_filename
 
 user = User()

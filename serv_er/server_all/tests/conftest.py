@@ -1,5 +1,5 @@
 import pytest
-from serv_er.src.models import User, db as _db, Media, Likes, Twitt, Followers
+from serv_er.backend.models import User, db as _db, Media, Likes, Twitt, Followers
 from serv_er.server_all.tests.app import create_app
 
 

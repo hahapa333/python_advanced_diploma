@@ -22,11 +22,17 @@ alembic stamp head чтобы указать, что текущее состоя
 
 ------------------ работа в докере
 команды для запуска контейнера для postgresql
+sudo chmod -R 777 /home/a/PycharmProjects/python_advanced/habit_bot/data/db -- даём права на запись для текущего пользователя
 docker-compose build - собрать контейнер
 docker compose up - запуск контейнера
 docker-compose down - удалить контейнер
+docker container prune -f -- Эта команда удалит все остановленные контейнеры (включая сиротские)
+docker-compose down -v --remove-orphans
+docker-compose up --build
+docker-compose build --no-cache --  Перезапусти сборку, но очисти кеш
 docker container ls - список контейнеров
 docker exec -it hw2-db-1 /bin/sh - заходим в контейнер
+sudo systemctl status docker -- Проверь статус демона
 psql -U admin - заходим под админом
 \l - список баз данных
 create database test_db; - создаём базу данных
@@ -38,8 +44,9 @@ DROP TABLE if exists users cascade; - удаление таблицы
 
 ----------------------------------- миграции alembic--------------------
 
-alembic init alembic - инициализация
-alembic revision --message="Init migration" --autogenerate
+alembic init <директория> - инициализация синхронного подключения
+alembic init async -t <директория> - инициализация асинхронного подключения 
+alembic revision --message="Init migration" --autogenerate -- создать миграцию 
 alembic upgrade head - накатываем миграцию
 alembic downgrade head - откатить миграцию
 alembic merge heads  -m "merge previous and next migration" -- соединяем ветки
@@ -58,3 +65,12 @@ pytest --cov-report html
         --cov-report lcov
         --cov-report annotate
         --cov=myproj tests/ -- записываем покрытие кода в других форматах
+        
+        
+------------------------localtunnel---------------------
+lt --port 8000 -- запустить
+npm install -g localtunnel -- установить клиент 
+
+---------------celery----------------------------------
+celery -A <имя файла> inspect registered -- Проверка регистрации задач
+celery -A <имя файла> worker --loglevel=info -- запустить celery-воркер 
